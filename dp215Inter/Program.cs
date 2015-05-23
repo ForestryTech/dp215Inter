@@ -4,16 +4,19 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.IO;
-
+using System.Diagnostics;
 namespace dp215Inter
 {
     class Program
     {
         static void Main(string[] args) {
+            Stopwatch st = Stopwatch.StartNew();
             SortingNetwork sn = new SortingNetwork();
             sn.BuildSortingNetwork(@"input4.txt");
             sn.RunSortingNetwork();
+            st.Stop();
             Console.Write(sn.ToString());
+            Console.WriteLine("\nTime: {0}", st.Elapsed);
             Console.ReadLine();
         }
     }
@@ -77,7 +80,6 @@ namespace dp215Inter
             bool goodNetwork = true;
             while (ctr < maxValuesToCompare && goodNetwork) {
                 input = getValuesToSort(ctr);
-                // run network
                 for (int i = 0; i < numberOfComparators; i++) {
                     int upperWire = comparators[i, 0];
                     int lowerWire = comparators[i, 1];
