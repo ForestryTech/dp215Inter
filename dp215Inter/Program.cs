@@ -1,23 +1,42 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.IO;
 using System.Diagnostics;
+
 namespace dp215Inter
 {
     class Program
     {
         static void Main(string[] args) {
+            if (args.Count() != 1) {
+                Console.WriteLine("Usage: dp215Inter.exe {i}filename\n");
+                return;
+            }
+
             Stopwatch st = Stopwatch.StartNew();
             SortingNetwork sn = new SortingNetwork();
-            sn.BuildSortingNetwork(@"input4.txt");
-            sn.RunSortingNetwork();
+
+            try {
+                sn.BuildSortingNetwork(@args[0]);
+                sn.RunSortingNetwork();
+            }
+            catch (FileNotFoundException f) {
+
+                Console.Write("File {0} not found.\n", args[0]);
+                Console.Write(f.Message);
+                return;
+            }
+            catch (IndexOutOfRangeException ex) {
+                Console.Write("Bad input.\n");
+                Console.Write(ex.Message);
+            }
+            catch (Exception e) {
+                Console.Write("Error. Program could not complete.\n");
+                Console.Write(e.Message);
+            }
             st.Stop();
             Console.Write(sn.ToString());
-            Console.WriteLine("\nTime: {0}", st.Elapsed);
-            Console.ReadLine();
+            Console.Write("\r\nTime: {0}", st.Elapsed);
         }
     }
 
@@ -37,7 +56,7 @@ namespace dp215Inter
             else
                 ans = "not valid";
 
-            return ans = "Network is " + ans;
+            return "Network is " + ans;
         }
 
         public void BuildSortingNetwork(string filename) {
@@ -45,21 +64,33 @@ namespace dp215Inter
             string input = null;
             int ctr = 0;
             isValid = true;
-            using(StreamReader sr = File.OpenText(filename)) {
-                while ((input = sr.ReadLine()) != null) {
-                    int[] vals = input.Split(' ').Select(s => Convert.ToInt32(s)).ToArray();
-                    if (firstLineInFile) {
-                        numberOfWires = vals[0];            
-                        numberOfComparators = vals[1];                
-                        comparators = new int[numberOfComparators, 2];                      
-                        maxValuesToCompare = Math.Pow(2, numberOfWires);
-                        firstLineInFile = false;
-                    } else {
-                        comparators[ctr, 0] = vals[0];
-                        comparators[ctr, 1] = vals[1];
-                        ctr++;
+
+            try {
+                using (StreamReader sr = File.OpenText(filename)) {
+                    while ((input = sr.ReadLine()) != null) {
+                        int[] vals = input.Split(' ').Select(s => Convert.ToInt32(s)).ToArray();
+                        if (firstLineInFile) {
+                            numberOfWires = vals[0];
+                            numberOfComparators = vals[1];
+                            comparators = new int[numberOfComparators, 2];
+                            maxValuesToCompare = Math.Pow(2, numberOfWires);
+                            firstLineInFile = false;
+                        } else {
+                            comparators[ctr, 0] = vals[0];
+                            comparators[ctr, 1] = vals[1];
+                            ctr++;
+                        }
                     }
                 }
+            }
+            catch (FileNotFoundException f) {
+                throw f;
+            }
+            catch (IndexOutOfRangeException ex) {
+                throw ex;
+            }
+            catch (Exception e) {
+                throw e;
             }
 
         }
@@ -78,23 +109,31 @@ namespace dp215Inter
             int ctr = 1;
             int temp;
             bool goodNetwork = true;
-            while (ctr < maxValuesToCompare && goodNetwork) {
-                input = getValuesToSort(ctr);
-                for (int i = 0; i < numberOfComparators; i++) {
-                    int upperWire = comparators[i, 0];
-                    int lowerWire = comparators[i, 1];
-                    if (input[upperWire] > input[lowerWire]) {
-                        temp = input[upperWire];
-                        input[upperWire] = input[lowerWire];
-                        input[lowerWire] = temp;
+            try {
+                while (ctr < maxValuesToCompare && goodNetwork) {
+                    input = getValuesToSort(ctr);
+                    for (int i = 0; i < numberOfComparators; i++) {
+                        int upperWire = comparators[i, 0];
+                        int lowerWire = comparators[i, 1];
+                        if (input[upperWire] > input[lowerWire]) {
+                            temp = input[upperWire];
+                            input[upperWire] = input[lowerWire];
+                            input[lowerWire] = temp;
+                        }
+                    }
+
+                    ctr++;
+                    if (!isSorted(input)) {
+                        goodNetwork = false;
+                        isValid = false;
                     }
                 }
-
-                ctr++;
-                if (!isSorted(input)) {
-                    goodNetwork = false;
-                    isValid = false;
-                }
+            }
+            catch (IndexOutOfRangeException ex) {
+                throw ex;
+            }
+            catch (Exception e) {
+                throw e;
             }
         }
 
